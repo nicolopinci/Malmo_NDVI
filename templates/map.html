@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet"> 
+<script src="https://cdn.plot.ly/plotly-2.11.1.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
+integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
+crossorigin=""/>
+ <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
+   integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
+   crossorigin=""></script>
+</head>
+<body>
+    <div id="map"></div>
+    <div id="tester" style="display: {{dp}}; width: 500px; height: 500px; margin-left: auto; margin-right: 50px; top: 50px; position: relative;"></div>
+    <div id="compute_season_start"><a class="fill" href="get_season_start?max_allowed_error=0.14&sigma=0.5" target="_blank">Compute season start for the entire map</a></div>
+</body>
+</html>
+
+
+<script>
+
+var map = L.map('map').setView([{{lat}}, {{lon}}], 12);
+L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+    maxZoom: 18,
+    id: 'mapbox/satellite-v9',
+    tileSize: 512,
+    zoomOffset: -1,
+    accessToken: 'pk.eyJ1Ijoibmljb2xvcGluY2kiLCJhIjoiY2p2djYyc2NvMXVtMjN6b3pybTF0bTJ3ayJ9.lP7ZhjJYbdLVXIWEvOPHgw'
+}).addTo(map);
+
+var resizeEvent = new Event('resize');
+
+window.dispatchEvent(resizeEvent);
+
+    map.on('click', function(e) {        
+        window.location.href = window.location.href.split("?")[0] + "?lat=" + e.latlng.lat + "&lon=" + e.latlng.lng + "&display=block";
+    });
+    
+    lat_min = {{lat}} - {{delta_lat}}/2
+    lat_max = {{lat}} + {{delta_lat}}/2
+    lon_min = {{lon}} - {{delta_lon}}/2
+    lon_max = {{lon}} + {{delta_lon}}/2
+
+    var rectlangle = L.polygon([[lat_min, lon_min], [lat_min, lon_max], [lat_max, lon_max], [lat_max, lon_min]], {color: "yellow", weight: 4}).addTo(map);
+
+    var trace_original = {y: {{ts}}, type: 'scatter', name: 'Original', line: {width: 0.5}};
+    var trace_out_mean = {y: {{ts_out_mean}}, type: 'scatter', name: 'Original (no outliers wrt mean)', line: {width: 1}};
+    var trace_out_median = {y: {{ts_out_median}}, type: 'scatter', name: 'Original (no outliers wrt median)', line: {width: 1}};
+    var trace_ma = {y: {{ts_ma}}, type: 'scatter', name: 'Rolling mean (n=3)', line: {width: 1}};
+    var trace_spline = {x: {{xts_spline}}, y: {{yts_spline}}, type: 'scatter', name: 'Interpolating spline', line: {width: 4}};
+    var trace_median = {x: {{xts_spline}}, y: Array({{xts_spline}}.length).fill({{median}}), type: 'scatter', name: 'Median', line: {color: 'black', dash: 'dot', width: 3}}
+    var trace_season = {x: Array(2).fill({{season_start}}), y: [0, 255], type: 'scatter', name: 'Season start', line: {color: 'green', dash: 'dot', width: 2}}
+    
+
+	TESTER = document.getElementById('tester');
+
+    var plot_layout = {
+        showlegend: true, 
+        legend: {x: 1, xanchor: 'right', y: -0.65, yanchor: 'bottom'}, 
+        title: {text: 'NDVI at ({{lat}}, {{lon}})', font: {size: 24}}, 
+        margin: {t: 50, l: 50, r: 10, b: 50, pad:10}, 
+        xaxis: {range: [0,35]}, 
+        yaxis: {range: [0, 255]}
+    }
+
+
+	Plotly.newPlot( TESTER, [trace_original, trace_out_mean, trace_out_median, trace_ma, trace_spline, trace_median, trace_season], plot_layout, {displayModeBar: false});
+    
+</script>
+
+<style>
+    body {margin: 0;}
+    #map { height: 100%; width: 100%;  position: fixed !important; background: none;}
+    #compute_season_start {position:relative; z-index: 10000; background-color: transparent; width: 500px; height: 50px; margin-left: auto; margin-right: 50px; top: 80px;}
+    
+    .fill {
+        text-align: center;
+        font-size: 18px;
+        font-weight: 200;
+        padding: 13px 50px 13px;
+        outline: 0;
+        border: 1px solid black;
+        cursor: pointer;
+        position: relative;
+        background-color: rgba(0, 0, 0, 0);
+        color: white;
+        text-decoration: none;
+        font-family: 'Roboto', sans-serif;
+        display: block;
+        }
+
+        .fill::after {
+        content: "";
+        background-color: #007399;
+        width: 100%;
+        z-index: -1;
+        position: absolute;
+        height: 100%;
+        top: 3px;
+        left: 3px;
+        transition: 0.2s;
+        }
+
+        .fill:hover::after {
+        top: 0px;
+        left: 0px;
+        }
+</style>
