@@ -11,12 +11,15 @@ import scipy.ndimage
 
 
 def index(request):
+    return render(request, 'index.html', dict())
 
-    min_lat = 2.33
-    max_lat = 17.2
+def visualize_map(request):
 
-    min_lon = -18.3
-    max_lon = -1.8
+    min_lat = float(request.GET.get('min_lat', '0'))
+    max_lat = float(request.GET.get('max_lat', '20'))
+
+    min_lon = float(request.GET.get('min_lon', '-20'))
+    max_lon = float(request.GET.get('max_lon', '0'))
 
     lat_elements = 200
     lon_elements = 200

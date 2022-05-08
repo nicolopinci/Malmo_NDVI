@@ -48,9 +48,10 @@ def get_all_coordinates():
 
 
 def moving_average_ts(ts, n=3):
-    cumsum_vec = np.cumsum(np.insert(ts, 0, 0))
-    ma_vec = (cumsum_vec[n:] - cumsum_vec[:-n]) / n
-    return ma_vec.tolist()
+    out_ts = [float('nan')]*len(ts)
+    out_ts[n-1:] = [np.mean(ts[i-n:i]) for i in range(n, len(ts)+1)]
+    print(out_ts)
+    return out_ts
 
 
 def remove_outliers_mean(ts, max_tolerance):

@@ -1,0 +1,46 @@
+<!DOCTYPE HTML>
+<style>
+label {
+    padding: 10px;
+}
+
+h1 {
+      margin: 0 auto;
+  width: 250px;
+    text-align: center;
+}
+
+form {
+    border: 1px solid black;
+padding: 10px;
+text-align: center;
+margin: 0 auto;
+width: 250px;
+}
+</style>
+
+<html>
+<head>
+
+</head>
+<body>
+<h1>Insert the West Africa map boundaries</h1>
+<form action="visualize_map" method="post">{% csrf_token %}
+    <h2>Latitude</h2>
+    <label for="min_lat">Minimum</label>
+    <input id="min_lat" type="number" name="min_lat"><br/>
+
+    <label for="max_lat">Maximum</label>
+    <input id="max_lat" type="number" name="max_lat"><br/>
+
+    <h2>Longitude</h2>
+    <label for="min_lon">Minimum</label>
+    <input id="min_lon" type="number" name="min_lon"><br/>
+
+    <label for="max_lon">Maximum</label>
+    <input id="max_lon" type="number" name="max_lon"><br/><br/>
+
+    <input type="submit" value="OK">
+</form>
+</body>
+</html>
